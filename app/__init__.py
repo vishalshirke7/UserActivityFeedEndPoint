@@ -23,23 +23,65 @@ def create_app():
     @app.route('/api/useractivity/<path:user_id>/<path:time_range>')
     @app.route('/api/useractivity/<path:time_range>', defaults={'user_id': None})
     def hello_world(user_id, time_range):
+
+        now = datetime.datetime.now()
+        then = now - datetime.timedelta(hours=int(time_range))
+        dicto, a = {}, 0
+        all_user_activities_item = db.session.query(ItemEdited).filter(and_(ItemEdited.edited_timestamp >= then))
+        all_user_activities_variant = db.session.query(VariantEdited).filter(
+            and_(VariantEdited.edited_timestamp >= then))
+        user_activities_on_items = db.session.query(ItemEdited).filter(and_(ItemEdited.user_id==user_id, ItemEdited.edited_timestamp>=then))
+        user_activities_on_variants = db.session.query(VariantEdited).filter(and_(VariantEdited.user_id==user_id, VariantEdited.edited_timestamp>=then))
         if user_id:
-            now = datetime.datetime.now()
-            then = now - datetime.timedelta(hours=int(time_range))
-            print(then)
-            user_activities = db.session.query(ItemEdited).filter(and_(ItemEdited.user_id==user_id, ItemEdited.edited_timestamp>=then))
-            ls = ""
-            dicto = {}
-            for user in user_activities:
-                # item_list = [i for i in user.]
-                name = user.user.first_name
-                print(name)
-                dicto[name] = "edited item {0} at {1}".format(user.items.name, user.edited_timestamp)
-                # ls + "{0} edited item {1} at {2}".format(user.user.first_name, user.items.name, user.edited_timestamp)
-            return jsonify(dicto)
-            # return "User id {}".format(user_id)
-        all_activities = db.session.query(ItemEdited).all()
-        return "Time range {}".format(time_range)
+            ls = user_activities_on_items
+            ls1 = user_activities_on_variants
+        else:
+            ls = all_user_activities_item
+            ls1 = all_user_activities_variant
+
+        for activity in ls:
+            item_attr_dict = {}
+            item_attr_dict['name'] = activity.name
+            item_attr_dict['brand'] = activity.brand
+            item_attr_dict['category'] = activity.category
+            if activity.new_item_created:
+                dicto[a] = "{0} created new item {1}".format(activity.user.first_name, activity.items.name)
+                a+=1
+            else:
+                edited_attributes = ""
+                for key, value in item_attr_dict.items():
+                    if value:
+                        edited_attributes = edited_attributes + key + ","
+                        # ls + "{0} edited {1} of item '{2}' \n".format(user.user.first_name, key, user.items.name)
+                edited_attributes = edited_attributes[:-1]
+                dicto[a] = "{0} edited {1} of item {2} on {3}".format(activity.user.first_name, edited_attributes, activity.items.name, activity.edited_timestamp)
+                a+=1
+        for var_activity in ls1:
+            var_attr_dict = {}
+            var_attr_dict['var_name'] = var_activity.var_name
+            var_attr_dict['cp'] = var_activity.cp
+            var_attr_dict['sp'] = var_activity.sp
+            var_attr_dict['quantity'] = var_activity.quantity
+            if var_activity.new_variant_created:
+                dicto[a] = "{0} Created new variant {1} on ".format(var_activity.user.first_name, var_activity.variant.var_name, var_activity.edited_timestamp)
+                a+=1
+            elif var_activity.variant_deleted:
+                dicto[a] = "{0} Deleted a variant {1} on ".format(var_activity.user.first_name,
+                                                                    var_activity.variant.var_name,
+                                                                    var_activity.edited_timestamp)
+                a+=1
+            else:
+                edited_var_attributes = ""
+                for key, value in var_attr_dict.items():
+                    if value:
+                        edited_var_attributes = edited_var_attributes + key + ","
+                        # ls + "{0} edited {1} of item '{2}' \n".format(user.user.first_name, key, user.items.name)
+                edited_var_attributes = edited_var_attributes[:-1]
+                dicto[a] = "{0} edited {1} of variant {2} on {3}".format(var_activity.user.first_name, edited_var_attributes,
+                                                                         var_activity.variant.var_name,
+                                                                         var_activity.edited_timestamp)
+                a += 1
+        return jsonify(dicto)
 
     return app
 
