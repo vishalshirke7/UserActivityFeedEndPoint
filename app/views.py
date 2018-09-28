@@ -14,7 +14,7 @@ def hello_world(user_id, time_range):
 
     now = datetime.datetime.now()
     then = now - datetime.timedelta(hours=int(time_range))
-    dicto, a = {}, 0
+    response, a = {}, 0
     all_user_activities_item = db.session.query(ItemEdited).filter(and_(ItemEdited.edited_timestamp >= then))
     all_user_activities_variant = db.session.query(VariantEdited).filter(
         and_(VariantEdited.edited_timestamp >= then))
@@ -38,7 +38,7 @@ def hello_world(user_id, time_range):
         item_attr_dict['brand'] = activity.brand
         item_attr_dict['category'] = activity.category
         if activity.new_item_created:
-            dicto[a] = "{0} created new item {1}".format(activity.user.first_name, activity.items.name)
+            response[a] = "{0} created new item {1}".format(activity.user.first_name, activity.items.name)
             a+=1
         else:
             edited_attributes = ""
@@ -47,7 +47,7 @@ def hello_world(user_id, time_range):
                     edited_attributes = edited_attributes + key + ","
                     # ls + "{0} edited {1} of item '{2}' \n".format(user.user.first_name, key, user.items.name)
             edited_attributes = edited_attributes[:-1]
-            dicto[a] = "{0} edited {1} of item {2} on {3}".format(activity.user.first_name, edited_attributes, activity.items.name, activity.edited_timestamp)
+            response[a] = "{0} edited {1} of item {2} on {3}".format(activity.user.first_name, edited_attributes, activity.items.name, activity.edited_timestamp)
             a+=1
     for var_activity in ls1:
         var_attr_dict = {}
@@ -56,10 +56,10 @@ def hello_world(user_id, time_range):
         var_attr_dict['sp'] = var_activity.sp
         var_attr_dict['quantity'] = var_activity.quantity
         if var_activity.new_variant_created:
-            dicto[a] = "{0} Created new variant {1} on {2}".format(var_activity.user.first_name, var_activity.variant.var_name, var_activity.edited_timestamp)
+            response[a] = "{0} Created new variant {1} on {2}".format(var_activity.user.first_name, var_activity.variant.var_name, var_activity.edited_timestamp)
             a+=1
         elif var_activity.variant_deleted:
-            dicto[a] = "{0} Deleted a variant {1} on {2}".format(var_activity.user.first_name,
+            response[a] = "{0} Deleted a variant {1} on {2}".format(var_activity.user.first_name,
                                                                 var_activity.variant.var_name,
                                                                 var_activity.edited_timestamp)
             a+=1
@@ -70,22 +70,16 @@ def hello_world(user_id, time_range):
                     edited_var_attributes = edited_var_attributes + key + ","
                     # ls + "{0} edited {1} of item '{2}' \n".format(user.user.first_name, key, user.items.name)
             edited_var_attributes = edited_var_attributes[:-1]
-            dicto[a] = "{0} edited {1} of variant {2} on {3}".format(var_activity.user.first_name, edited_var_attributes,
+            response[a] = "{0} edited {1} of variant {2} on {3}".format(var_activity.user.first_name, edited_var_attributes,
                                                                      var_activity.variant.var_name,
                                                                      var_activity.edited_timestamp)
             a += 1
     for prop_activity in ls2:
 
-        dicto[a] = "{0} {1} new variant property {2} for variant {3} on {4}".format(prop_activity.user.first_name,
+        response[a] = "{0} {1} new variant property {2} for variant {3} on {4}".format(prop_activity.user.first_name,
                                                                                         prop_activity.status,
                                                                                             prop_activity.prop_name,
                                                                          prop_activity.variant.var_name,
                                                                          prop_activity.timestamp)
         a+=1
-    return jsonify(dicto)
-    # itemedited = VariantProperties(user_id=2, variant_id=2, prop_name="Size", status="Deleted")
-    # itemedited1 = VariantProperties(user_id=1, variant_id=2, prop_name="Color", status="Created")
-    # db.session.add(itemedited)
-    # db.session.add(itemedited1)
-    # db.session.commit()
-    # return "hjkpoiufghooj"
+    return jsonify(response)
