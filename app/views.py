@@ -83,9 +83,3 @@ def hello_world(user_id, time_range):
                                                                          prop_activity.timestamp)
         a+=1
     return jsonify(dicto)
-    # itemedited = VariantProperties(user_id=2, variant_id=2, prop_name="Size", status="Deleted")
-    # itemedited1 = VariantProperties(user_id=1, variant_id=2, prop_name="Color", status="Created")
-    # db.session.add(itemedited)
-    # db.session.add(itemedited1)
-    # db.session.commit()
-    # return "hjkpoiufghooj"
