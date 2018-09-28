@@ -11,6 +11,7 @@ class User(db.Model):
     last_name = db.Column(db.String(120), nullable=False)
     variant_edited = db.relationship('VariantEdited', backref="user")
     item_edited = db.relationship('ItemEdited', backref="user")
+    var_prop = db.relationship('VariantProperties', backref="user")
     # items_edited = db.relationship('Items')
 
     def __init__(self, first_name, last_name):
@@ -53,6 +54,7 @@ class Variant(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('items.id'))
     variant_edited = db.relationship('VariantEdited', backref="variant")
+    variant_prop = db.relationship('VariantProperties', backref="variant")
 
 
 class ItemEdited(db.Model):
@@ -86,3 +88,14 @@ class VariantEdited(db.Model):
     cp = db.Column(db.Boolean, default=False)
     quantity = db.Column(db.Boolean, default=False)
 
+
+class VariantProperties(db.Model):
+
+    __tablename__ = 'variantproperties'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    variant_id = db.Column(db.Integer, db.ForeignKey('variant.id'))
+    prop_name = db.Column(db.String(120), nullable=False)
+    status = db.Column(db.String(120), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
