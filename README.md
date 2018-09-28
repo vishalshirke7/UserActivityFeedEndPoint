@@ -15,7 +15,7 @@
 ```
 
 
-**_Arguments to endpoint_** :
+**_Models_** :
 1. User (storing basic info of user)
 2. Items (storig items related info)
 3. Variants (storing variant related info)
